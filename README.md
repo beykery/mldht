@@ -1,6 +1,8 @@
-# lucener
+# mldht
 
-lucene util
+Kademlia-based bittorrent mainline DHT
+
+[copy from](https://github.com/the8472/mldht)
 
 ## 坐标
 
@@ -8,7 +10,7 @@ lucene util
 
 <dependency>
     <groupId>org.beykery</groupId>
-    <artifactId>lucener</artifactId>
-    <version>1.0.8</version>
+    <artifactId>mldht</artifactId>
+    <version>0.0.1</version>
 </dependency>
 ```
