@@ -6,6 +6,10 @@ import the8472.TorrentListener;
 import the8472.mldht.Launcher;
 import the8472.mldht.cli.Torrent;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+
 /**
  * test torrent
  */
@@ -18,6 +22,11 @@ public class TorrentTest {
             @Override
             public void onTorrent(Torrent torrent) {
                 System.out.println(torrent);
+                try {
+                    torrent.save(Files.newOutputStream(new File("./" + torrent.getHash() + ".torrent").toPath()));
+                } catch (Exception ex) {
+                    System.out.println("save to disk error: " + torrent.getHash());
+                }
             }
 
             @Override

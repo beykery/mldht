@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import the8472.utils.Mappers;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -143,5 +145,18 @@ public class Torrent {
             return files.stream().mapToLong(TFile::getLength).sum();
         }
         return 0;
+    }
+
+    /**
+     * to stream
+     *
+     * @param stream
+     */
+    public void save(OutputStream stream) throws IOException {
+        ByteBuffer buffer = raw.duplicate();
+        byte[] arr = new byte[buffer.remaining()];
+        buffer.get(arr);
+        stream.write(arr);
+        stream.flush();
     }
 }
