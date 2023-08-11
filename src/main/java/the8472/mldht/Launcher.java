@@ -30,6 +30,7 @@ import lbms.plugins.mldht.kad.DHTLogger;
 import lbms.plugins.mldht.kad.Key;
 import lbms.plugins.mldht.kad.messages.GetRequest;
 import the8472.TorrentListener;
+import the8472.mldht.cli.Server;
 import the8472.mldht.indexing.TorrentDumper;
 import the8472.utils.ConfigReader;
 import the8472.utils.FilesystemNotifications;
@@ -242,6 +243,9 @@ public class Launcher {
             torrentDumper.setTorrentListener(torrentListener);
         }
         torrentDumper.start(dhts, configReader);
+//        Server server = new Server();
+//        server.start(dhts, configReader);
+
         //Runtime.getRuntime().addShutdownHook(shutdownHook);
 
 //        Path shutdown = Paths.get("./work/shutdown");

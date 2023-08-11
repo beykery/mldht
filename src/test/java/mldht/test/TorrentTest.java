@@ -10,15 +10,11 @@ import the8472.mldht.cli.Torrent;
  * test torrent
  */
 public class TorrentTest {
+    Launcher la;
 
     @BeforeEach
     void setUp() throws Exception {
-
-    }
-
-    @Test
-    public void start() throws Exception {
-        Launcher la = new Launcher(new TorrentListener() {
+        la = new Launcher(new TorrentListener() {
             @Override
             public void onTorrent(Torrent torrent) {
                 System.out.println(torrent);
@@ -30,7 +26,6 @@ public class TorrentTest {
             }
         });
         la.start();
-        Thread.sleep(10 * 60 * 60 * 1000);
     }
 
     /**
@@ -43,4 +38,11 @@ public class TorrentTest {
         System.out.println(t);
     }
 
+    @Test
+    public void download() throws Exception {
+        la.fetchTorrent("6B16D5ACD79E0BCD444ED769A87E790854E5E3F6");
+//        Thread.sleep(10 * 1000L);
+//        Client client = new Client(new String[]{"HELP", "6B16D5ACD79E0BCD444ED769A87E790854E5E3F6"});
+        Thread.sleep(24 * 3600 * 1000L);
+    }
 }
