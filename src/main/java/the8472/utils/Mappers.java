@@ -1,5 +1,6 @@
 package the8472.utils;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,6 +17,7 @@ public abstract class Mappers {
 
     static {
         jsonMapper = new ObjectMapper();
+        jsonMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
     }
 
     public static <T> T parseJson(String json, TypeReference<T> type) {
