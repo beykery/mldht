@@ -243,8 +243,8 @@ public class Launcher {
             torrentDumper.setTorrentListener(torrentListener);
         }
         torrentDumper.start(dhts, configReader);
-//        Server server = new Server();
-//        server.start(dhts, configReader);
+        Server server = new Server();
+        server.start(dhts, configReader);
 
         //Runtime.getRuntime().addShutdownHook(shutdownHook);
 
