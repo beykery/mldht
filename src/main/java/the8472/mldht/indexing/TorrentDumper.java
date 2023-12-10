@@ -58,8 +58,8 @@ import static the8472.utils.Functional.*;
 public class TorrentDumper implements Component {
 
     Collection<DHT> dhts;
-    Path storageDir = Paths.get("./work", "dump-storage");
-    Path statsDir = storageDir.resolve("stats");
+    //Path storageDir = Paths.get("./work", "dump-storage");
+    //Path statsDir = storageDir.resolve("stats");
 //    Path torrentDir = storageDir.resolve("torrents");
 
     private static final int MAX_STAT_FILE_SIZE = 8 * 1024;
@@ -211,9 +211,9 @@ public class TorrentDumper implements Component {
         try {
             //Files.createDirectories(torrentDir);
             for (State st : FetchStats.State.values()) {
-                Files.createDirectories(st.stateDir(statsDir));
+                //Files.createDirectories(st.stateDir(statsDir));
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -231,7 +231,7 @@ public class TorrentDumper implements Component {
         scheduler.scheduleWithFixedDelay(() -> {
             // long-running things working on the filesystem go here to avoid blocking all threads in the pool
             try {
-                this.purgeStats();
+                //this.purgeStats();
             } catch (Exception e) {
                 log(e);
             }
@@ -410,83 +410,83 @@ public class TorrentDumper implements Component {
         return torrentListener.torrentExists(hex);
     }
 
-    void purgeStats() {
-        Path failedDir = FetchStats.State.FAILED.stateDir(statsDir);
-        Path initialDir = FetchStats.State.INITIAL.stateDir(statsDir);
-
-        long now = System.currentTimeMillis();
-
-        try {
-            Supplier<Stream<Path>> supplyInitial = () -> unchecked(() -> fetchStatsStream(Stream.of(initialDir)));
-            Supplier<Stream<Path>> supplyFailed = () -> unchecked(() -> fetchStatsStream(Stream.of(failedDir)));
-            Predicate<FetchStats> deleteInitial = stat -> now - stat.creationTime > TimeUnit.DAYS.toMillis(4);
-            Predicate<FetchStats> deleteFailed = stat -> {
-                long timeSinceFetch = now - stat.lastFetchTime;
-
-                // this fetch attempt was from State.INITIAL, don't keep it around for so long, it's unlikely it'll get another hit
-                if (stat.insertCount == 1)
-                    return timeSinceFetch > TimeUnit.HOURS.toMillis(1);
-
-                long timeToFetch = stat.lastFetchTime - stat.creationTime;
-                timeToFetch = Math.max(TimeUnit.HOURS.toMillis(1), timeToFetch);
-
-                // the longer it takes us to chew through the data the longer we keep things around
-                return timeSinceFetch > timeToFetch * 4;
-            };
-
-            BiConsumer<Supplier<Stream<Path>>, Predicate<FetchStats>> doDeletes = (a, b) -> {
-                unchecked(() -> {
-                    // probe first 100, only do a full pass if > N% are eligible for deletion
-                    boolean doFullIteration = autoclose(a, (p) -> {
-                        long cnt = filesToFetchers(p)
-                                .filter(Objects::nonNull)
-                                .limit(100)
-                                .filter(b)
-                                .count();
-                        return cnt > 33;
-                    });
-
-                    if (doFullIteration) {
-                        autoclose(a, p -> {
-                            filesToFetchers(p).filter(Objects::nonNull)
-                                    .filter(b)
-                                    .map(stat -> stat.statsName(statsDir, null))
-                                    .forEach(path -> unchecked(() -> Files.deleteIfExists(path)));
-                            return null;
-                        });
-                    }
-                    return null;
-                });
-            };
-            doDeletes.accept(supplyInitial, deleteInitial);
-            doDeletes.accept(supplyFailed, deleteFailed);
-        } catch (Exception e) {
-            log(e);
-        }
-		/*
-		// 0 -> stats, 1 -> {failed|initial|prio}, 2 -> 00, 3 -> 00/00
-		try (Stream<Path> st = Files.find(statsDir, 3, (p, attr) -> attr.isDirectory())) {
-			st.filter(d -> {
-				try (DirectoryStream<Path> dst = Files.newDirectoryStream(d)) {
-					return !dst.iterator().hasNext();
-				} catch (IOException e) {
-					throw new UncheckedIOException(e);
-				}
-			}).forEach(d -> {
-				try {
-					Files.deleteIfExists(d);
-				} catch(DirectoryNotEmptyException e) {
-					// someone on another thread wrote to it. do nothing
-				} catch (IOException e) {
-					throw new UncheckedIOException(e);
-				}
-			});
-		} catch (UncheckedIOException | IOException e) {
-			log(e);
-		}*/
-
-
-    }
+//    void purgeStats() {
+//        Path failedDir = FetchStats.State.FAILED.stateDir(statsDir);
+//        Path initialDir = FetchStats.State.INITIAL.stateDir(statsDir);
+//
+//        long now = System.currentTimeMillis();
+//
+//        try {
+//            Supplier<Stream<Path>> supplyInitial = () -> unchecked(() -> fetchStatsStream(Stream.of(initialDir)));
+//            Supplier<Stream<Path>> supplyFailed = () -> unchecked(() -> fetchStatsStream(Stream.of(failedDir)));
+//            Predicate<FetchStats> deleteInitial = stat -> now - stat.creationTime > TimeUnit.DAYS.toMillis(4);
+//            Predicate<FetchStats> deleteFailed = stat -> {
+//                long timeSinceFetch = now - stat.lastFetchTime;
+//
+//                // this fetch attempt was from State.INITIAL, don't keep it around for so long, it's unlikely it'll get another hit
+//                if (stat.insertCount == 1)
+//                    return timeSinceFetch > TimeUnit.HOURS.toMillis(1);
+//
+//                long timeToFetch = stat.lastFetchTime - stat.creationTime;
+//                timeToFetch = Math.max(TimeUnit.HOURS.toMillis(1), timeToFetch);
+//
+//                // the longer it takes us to chew through the data the longer we keep things around
+//                return timeSinceFetch > timeToFetch * 4;
+//            };
+//
+//            BiConsumer<Supplier<Stream<Path>>, Predicate<FetchStats>> doDeletes = (a, b) -> {
+//                unchecked(() -> {
+//                    // probe first 100, only do a full pass if > N% are eligible for deletion
+//                    boolean doFullIteration = autoclose(a, (p) -> {
+//                        long cnt = filesToFetchers(p)
+//                                .filter(Objects::nonNull)
+//                                .limit(100)
+//                                .filter(b)
+//                                .count();
+//                        return cnt > 33;
+//                    });
+//
+//                    if (doFullIteration) {
+//                        autoclose(a, p -> {
+//                            filesToFetchers(p).filter(Objects::nonNull)
+//                                    .filter(b)
+//                                    .map(stat -> stat.statsName(statsDir, null))
+//                                    .forEach(path -> unchecked(() -> Files.deleteIfExists(path)));
+//                            return null;
+//                        });
+//                    }
+//                    return null;
+//                });
+//            };
+//            doDeletes.accept(supplyInitial, deleteInitial);
+//            doDeletes.accept(supplyFailed, deleteFailed);
+//        } catch (Exception e) {
+//            log(e);
+//        }
+//		/*
+//		// 0 -> stats, 1 -> {failed|initial|prio}, 2 -> 00, 3 -> 00/00
+//		try (Stream<Path> st = Files.find(statsDir, 3, (p, attr) -> attr.isDirectory())) {
+//			st.filter(d -> {
+//				try (DirectoryStream<Path> dst = Files.newDirectoryStream(d)) {
+//					return !dst.iterator().hasNext();
+//				} catch (IOException e) {
+//					throw new UncheckedIOException(e);
+//				}
+//			}).forEach(d -> {
+//				try {
+//					Files.deleteIfExists(d);
+//				} catch(DirectoryNotEmptyException e) {
+//					// someone on another thread wrote to it. do nothing
+//				} catch (IOException e) {
+//					throw new UncheckedIOException(e);
+//				}
+//			});
+//		} catch (UncheckedIOException | IOException e) {
+//			log(e);
+//		}*/
+//
+//
+//    }
 
 
     Stream<Path> dirShuffler(Path p) {
@@ -574,27 +574,26 @@ public class TorrentDumper implements Component {
         }
         Set<Key> dedup = skipSet();
         try {
-            Path prio = FetchStats.State.PRIORITY.stateDir(statsDir);
-            Path normal = FetchStats.State.INITIAL.stateDir(statsDir);
+//            Path prio = FetchStats.State.PRIORITY.stateDir(statsDir);
+//            Path normal = FetchStats.State.INITIAL.stateDir(statsDir);
 
             // strides of 8 * maxtasks/4. should be >= low watermark
             int strides = maxFetches() / 4;
             int[] added = new int[1];
             for (int i = 0; i < strides; i++) {
-                Stream<FetchStats> pst = filesToFetchers(fetchStatsStream(Stream.of(prio))).limit(200);
-                Stream<FetchStats> nst = filesToFetchers(fetchStatsStream(Stream.of(normal))).limit(200);
+//                Stream<FetchStats> pst = filesToFetchers(fetchStatsStream(Stream.of(prio))).limit(200);
+//                Stream<FetchStats> nst = filesToFetchers(fetchStatsStream(Stream.of(normal))).limit(200);
 
-                try (Stream<FetchStats> st = Stream.concat(pst, nst)) {
-                    st.filter(stats -> !dedup.contains(stats.k)).limit(8).forEach(e -> {
-                        dedup.add(e.getK());
-                        synchronized (toFetchNext) {
-                            toFetchNext.add(e);
-                        }
-                        added[0] += 1;
-                    });
-
-                }
-                ;
+//                try (Stream<FetchStats> st = Stream.concat(pst, nst)) {
+//                    st.filter(stats -> !dedup.contains(stats.k)).limit(8).forEach(e -> {
+//                        dedup.add(e.getK());
+//                        synchronized (toFetchNext) {
+//                            toFetchNext.add(e);
+//                        }
+//                        added[0] += 1;
+//                    });
+//
+//                }
             }
             int remaining = strides * 8 - added[0];
 
@@ -713,21 +712,21 @@ public class TorrentDumper implements Component {
         });
         activeTasks.remove(t.infohash());
         try {
-            for (FetchStats.State st : FetchStats.State.values()) {
-                Files.deleteIfExists(stats.statsName(statsDir, st));
-            }
+//            for (FetchStats.State st : FetchStats.State.values()) {
+//                Files.deleteIfExists(stats.statsName(statsDir, st));
+//            }
             Optional<ByteBuffer> result = t.getResult();
             if (!result.isPresent()) {  // 下载失败
                 stats.setState(FetchStats.State.FAILED);
                 stats.fetchCount++;
                 stats.lastFetchTime = System.currentTimeMillis();
 
-                Path failedStatsFile = stats.statsName(statsDir, null);
-                Files.createDirectories(failedStatsFile.getParent());
-
-                try (FileChannel statsChan = FileChannel.open(failedStatsFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
-                    statsChan.write(new BEncoder().encode(stats.forBencoding(), 4 * 1024));
-                }
+//                Path failedStatsFile = stats.statsName(statsDir, null);
+//                Files.createDirectories(failedStatsFile.getParent());
+//
+//                try (FileChannel statsChan = FileChannel.open(failedStatsFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+//                    statsChan.write(new BEncoder().encode(stats.forBencoding(), 4 * 1024));
+//                }
                 return;
             }
 
@@ -769,14 +768,14 @@ public class TorrentDumper implements Component {
 
     void diagnostics() {
         try {
-            FileIO.writeAndAtomicMove(storageDir.resolve("dumper.log"), (p) -> {
-                p.format("Fetcher:%n established: %d%n sockets: %d%n%n adaptive timeout:%n%s %n%n", fetcher.openConnections(), fetcher.socketcount(), fetcher.adaptiveConnectTimeoutHistogram());
-                p.format("FetchTasks: %d %n", activeCount.get());
-                activeTasks.values().forEach(ft -> {
-                    p.println(ft.toString());
-                });
-            });
-        } catch (IOException e) {
+//            FileIO.writeAndAtomicMove(storageDir.resolve("dumper.log"), (p) -> {
+//                p.format("Fetcher:%n established: %d%n sockets: %d%n%n adaptive timeout:%n%s %n%n", fetcher.openConnections(), fetcher.socketcount(), fetcher.adaptiveConnectTimeoutHistogram());
+//                p.format("FetchTasks: %d %n", activeCount.get());
+//                activeTasks.values().forEach(ft -> {
+//                    p.println(ft.toString());
+//                });
+//            });
+        } catch (Exception e) {
             log(e);
         }
     }
