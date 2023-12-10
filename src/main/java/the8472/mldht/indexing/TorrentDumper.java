@@ -337,60 +337,61 @@ public class TorrentDumper implements Component {
             if (!fromMessages.remove(k, toStore))
                 return;
             try {
-                Optional<Path> existing = Stream.of(toStore.statsName(statsDir, FetchStats.State.INITIAL), toStore.statsName(statsDir, FetchStats.State.FAILED), toStore.statsName(statsDir, FetchStats.State.PRIORITY)).filter(Files::isRegularFile).findFirst();
-                if (!existing.isPresent()) {
-                    // only throttle IPs for new hashes we don't already know about and wouldn't try anyway
-                    if (activeCount.get() > 50 && blocklist.putIfAbsent(toStore.recentSources.get(0).getAddress().getAddress(), now) != null)
-                        return;
-                }
-                if (existing.isPresent()) {
-                    Path p = existing.get();
-                    try (FileChannel ch = FileChannel.open(p, StandardOpenOption.READ)) {
-                        buf.clear();
-                        while (ch.read(buf) != -1) ;
-                        buf.flip();
-                        FetchStats old = FetchStats.fromBencoded(new BDecoder().decode(buf));
-
-                        Collection<InetAddress> oldAddrs = old.recentSources.stream().map(e -> e.getAddress().getAddress()).collect(Collectors.toList());
-                        Collection<InetAddress> newAddrs = toStore.recentSources.stream().map(e -> e.getAddress().getAddress()).collect(Collectors.toList());
-
-                        // avoid double-taps promoting things to the priority list
-                        if (oldAddrs.containsAll(newAddrs) && old.state == FetchStats.State.INITIAL)
-                            return;
-
-                        toStore.merge(old);
-
-                        if (old.state != FetchStats.State.INITIAL)
-                            toStore.state = old.state;
-
-                    } catch (IOException e) {
-                        log(e);
-                    }
-                }
-
-                if (toStore.state == State.INITIAL && toStore.insertCount > 1) {
-                    toStore.state = State.PRIORITY;
-                    if (existing.isPresent())
-                        Files.deleteIfExists(existing.get());
-                }
-
-
-                Path statsFile = toStore.statsName(statsDir, null);
-
-                Path tempFile = Files.createTempFile(statsDir, statsFile.getFileName().toString(), ".stats");
-
-                try (FileChannel ch = FileChannel.open(tempFile, StandardOpenOption.WRITE)) {
-                    buf.clear();
-                    new BEncoder().encodeInto(toStore.forBencoding(), buf);
-                    while (buf.hasRemaining())
-                        ch.write(buf);
-                    ch.close();
-                    Files.createDirectories(statsFile.getParent());
-                    Files.move(tempFile, statsFile, StandardCopyOption.ATOMIC_MOVE);
-                } catch (Exception ex) {
-                    Files.deleteIfExists(tempFile);
-                    throw ex;
-                }
+                // 不再保存状态
+//                Optional<Path> existing = Stream.of(toStore.statsName(statsDir, FetchStats.State.INITIAL), toStore.statsName(statsDir, FetchStats.State.FAILED), toStore.statsName(statsDir, FetchStats.State.PRIORITY)).filter(Files::isRegularFile).findFirst();
+//                if (!existing.isPresent()) {
+//                    // only throttle IPs for new hashes we don't already know about and wouldn't try anyway
+//                    if (activeCount.get() > 50 && blocklist.putIfAbsent(toStore.recentSources.get(0).getAddress().getAddress(), now) != null)
+//                        return;
+//                }
+//                if (existing.isPresent()) {
+//                    Path p = existing.get();
+//                    try (FileChannel ch = FileChannel.open(p, StandardOpenOption.READ)) {
+//                        buf.clear();
+//                        while (ch.read(buf) != -1) ;
+//                        buf.flip();
+//                        FetchStats old = FetchStats.fromBencoded(new BDecoder().decode(buf));
+//
+//                        Collection<InetAddress> oldAddrs = old.recentSources.stream().map(e -> e.getAddress().getAddress()).collect(Collectors.toList());
+//                        Collection<InetAddress> newAddrs = toStore.recentSources.stream().map(e -> e.getAddress().getAddress()).collect(Collectors.toList());
+//
+//                        // avoid double-taps promoting things to the priority list
+//                        if (oldAddrs.containsAll(newAddrs) && old.state == FetchStats.State.INITIAL)
+//                            return;
+//
+//                        toStore.merge(old);
+//
+//                        if (old.state != FetchStats.State.INITIAL)
+//                            toStore.state = old.state;
+//
+//                    } catch (IOException e) {
+//                        log(e);
+//                    }
+//                }
+//
+//                if (toStore.state == State.INITIAL && toStore.insertCount > 1) {
+//                    toStore.state = State.PRIORITY;
+//                    if (existing.isPresent())
+//                        Files.deleteIfExists(existing.get());
+//                }
+//
+//
+//                Path statsFile = toStore.statsName(statsDir, null);
+//
+//                Path tempFile = Files.createTempFile(statsDir, statsFile.getFileName().toString(), ".stats");
+//
+//                try (FileChannel ch = FileChannel.open(tempFile, StandardOpenOption.WRITE)) {
+//                    buf.clear();
+//                    new BEncoder().encodeInto(toStore.forBencoding(), buf);
+//                    while (buf.hasRemaining())
+//                        ch.write(buf);
+//                    ch.close();
+//                    Files.createDirectories(statsFile.getParent());
+//                    Files.move(tempFile, statsFile, StandardCopyOption.ATOMIC_MOVE);
+//                } catch (Exception ex) {
+//                    Files.deleteIfExists(tempFile);
+//                    throw ex;
+//                }
             } catch (Exception e) {
                 log(e);
             }
