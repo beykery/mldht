@@ -1,6 +1,5 @@
 package mldht.test;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import the8472.TorrentListener;
 import the8472.mldht.Launcher;
@@ -8,7 +7,6 @@ import the8472.mldht.cli.Client;
 import the8472.mldht.cli.Torrent;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 
 /**
@@ -59,9 +57,17 @@ public class TorrentTest {
 //        Client client = new Client(new String[]{"HELP", "6B16D5ACD79E0BCD444ED769A87E790854E5E3F6"});
         Thread.sleep(24 * 3600 * 1000L);
     }
+
     @Test
     void get() throws Exception {
         new Client("GETTORRENT", "6B16D5ACD79E0BCD444ED769A87E790854E5E3F6");
+    }
 
+    /**
+     * burst
+     */
+    @Test
+    void burst() throws Exception {
+        new Client("BURST");
     }
 }
