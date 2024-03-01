@@ -77,13 +77,11 @@ public class Client {
                     break;
                 case "exit":
                     serverConnection.close();
-                    System.exit(((Long) msg.get("exitCode")).intValue());
+                    //System.exit(((Long) msg.get("exitCode")).intValue());
                     break;
                 default:
                     throw new IllegalStateException("unexpected action " + action);
             }
-
-
         }
     }
 
