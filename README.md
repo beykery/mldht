@@ -11,6 +11,6 @@ Kademlia-based bittorrent mainline DHT
 <dependency>
     <groupId>org.beykery</groupId>
     <artifactId>mldht</artifactId>
-    <version>0.0.7-RELEASE</version>
+    <version>0.0.8</version>
 </dependency>
 ```
