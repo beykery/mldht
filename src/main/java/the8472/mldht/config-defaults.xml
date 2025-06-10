@@ -10,7 +10,7 @@
         <logLevel>Info</logLevel>
         <port>49001</port>
         <useBootstrapServers>true</useBootstrapServers>
-        <multihoming>false</multihoming>
+        <multihoming>true</multihoming>
         <persistID>false</persistID>
         <disableIPVersion>6</disableIPVersion>
     </core>

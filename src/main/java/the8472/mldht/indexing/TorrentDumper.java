@@ -20,6 +20,7 @@ import the8472.bt.UselessPeerFilter;
 import the8472.mldht.Component;
 import the8472.mldht.TorrentFetcher;
 import the8472.mldht.TorrentFetcher.FetchTask;
+import the8472.mldht.cli.Client;
 import the8472.mldht.cli.Torrent;
 import the8472.mldht.cli.TorrentInfo;
 import the8472.mldht.indexing.TorrentDumper.FetchStats.State;
@@ -219,23 +220,34 @@ public class TorrentDumper implements Component {
 
         // XXX: fetcher.setPeerFilter(pf); // filter seems overly aggressive. investigate if we still need it or can improve it
 
-        scheduler.scheduleWithFixedDelay(singleThreadedDumpStats, 10, 10, TimeUnit.SECONDS);
-        scheduler.scheduleWithFixedDelay(singleThreadedPrefetch, 30, 2, TimeUnit.SECONDS);
+        //scheduler.scheduleWithFixedDelay(singleThreadedDumpStats, 10, 1, TimeUnit.SECONDS);
+        scheduler.scheduleWithFixedDelay(singleThreadedPrefetch, 30, 1, TimeUnit.SECONDS);
         scheduler.scheduleWithFixedDelay(singleThreadedFetches, 10, 1, TimeUnit.SECONDS);
         scheduler.scheduleWithFixedDelay(this::cleanBlocklist, 1, 1, TimeUnit.MINUTES);
-        scheduler.scheduleWithFixedDelay(this::diagnostics, 30, 30, TimeUnit.SECONDS);
+        //scheduler.scheduleWithFixedDelay(this::diagnostics, 30, 30, TimeUnit.SECONDS);
         scheduler.scheduleWithFixedDelay(this::scrubActive, 10, 20, TimeUnit.SECONDS);
         scheduler.scheduleWithFixedDelay(pf::clean, 10, 10, TimeUnit.MINUTES);
-        scheduler.schedule(this::sampling, 2, TimeUnit.MINUTES);
+        //scheduler.schedule(this::sampling, 2, TimeUnit.MINUTES);
+        //scheduler.schedule(this::burst, 10, TimeUnit.MINUTES);
+//        scheduler.scheduleWithFixedDelay(() -> {
+//            // long-running things working on the filesystem go here to avoid blocking all threads in the pool
+//            try {
+//                //this.purgeStats();
+//            } catch (Exception e) {
+//                log(e);
+//            }
+//        }, 5, 15, TimeUnit.MINUTES);
+    }
 
-        scheduler.scheduleWithFixedDelay(() -> {
-            // long-running things working on the filesystem go here to avoid blocking all threads in the pool
-            try {
-                //this.purgeStats();
-            } catch (Exception e) {
-                log(e);
-            }
-        }, 5, 15, TimeUnit.MINUTES);
+    /**
+     * burst
+     */
+    private void burst() {
+        try {
+            new Client("BURST");
+        } catch (Throwable e) {
+            log(e);
+        }
     }
 
     void log(Throwable t) {
@@ -551,7 +563,7 @@ public class TorrentDumper implements Component {
     }
 
     // avoids that adjacent tasks are started at the same time. interleaving them with other tasks allows for better cache-priming
-    Queue<FetchStats> toFetchNext = new ShufflingBag<>();
+    final Queue<FetchStats> toFetchNext = new ShufflingBag<>();
 
     Runnable singleThreadedPrefetch = SerializedTaskExecutor.onceMore(this::prefetch);
 
@@ -646,7 +658,7 @@ public class TorrentDumper implements Component {
     int maxFetches() {
         // we need enough tasks to keep many RPC servers busy
         int minServers = dhts.stream().mapToInt(d -> d.getServerManager().getActiveServerCount()).min().orElse(0);
-        return minServers * 2 + 100;
+        return minServers * 2 + 200;
     }
 
     void scrubActive() {

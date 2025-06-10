@@ -1,5 +1,6 @@
 package mldht.test;
 
+import lbms.plugins.mldht.kad.Key;
 import org.junit.jupiter.api.Test;
 import the8472.TorrentListener;
 import the8472.mldht.Launcher;
@@ -18,11 +19,21 @@ public class TorrentTest {
     @Test
     void start() throws Exception {
         la = new Launcher(new TorrentListener() {
+            long time = System.currentTimeMillis();
+            int count = 0;
+
             @Override
             public void onTorrent(Torrent torrent) {
                 System.out.println(torrent);
+                count++;
+                long cost = System.currentTimeMillis() - time;
+                System.out.println("count: " + count + " cost: " + cost / 1000.0 + "s" + " avg: " + (cost / 1000.0 / count) + "s per torrent");
                 try {
-                    torrent.save(Files.newOutputStream(new File("./" + torrent.getHash() + ".torrent").toPath()));
+                    File dest = new File("./torrents/" + torrent.getHash() + ".torrent");
+                    if (!dest.getParentFile().exists()) {
+                        dest.getParentFile().mkdirs();
+                    }
+                    torrent.save(Files.newOutputStream(new File("./torrents/" + torrent.getHash() + ".torrent").toPath()));
                 } catch (Exception ex) {
                     System.out.println("save to disk error: " + torrent.getHash());
                 }
@@ -69,5 +80,13 @@ public class TorrentTest {
     @Test
     void burst() throws Exception {
         new Client("BURST");
+    }
+
+    @Test
+    void randomKey() throws Exception {
+        Key key = Key.createRandomKey();
+        String torrent = key.toString(false);
+        System.out.println(torrent);
+        new Client("GETTORRENT", torrent);
     }
 }

@@ -52,7 +52,20 @@ public class Launcher {
     /**
      * listener for torrent
      */
-    private TorrentListener torrentListener;
+    private final TorrentListener torrentListener;
+    /**
+     * singleton instance
+     */
+    private static Launcher instance;
+
+    /**
+     * instance
+     *
+     * @return
+     */
+    public static Launcher getInstance() {
+        return instance;
+    }
 
     class XmlConfig implements DHTConfiguration {
 
@@ -116,6 +129,7 @@ public class Launcher {
         scheduler = new NonblockingScheduledExecutor("mlDHT", Math.max(Runtime.getRuntime().availableProcessors(), 4), (t, ex) -> {
             logger.log(ex, LogLevel.Fatal);
         });
+        instance = this;
     }
 
     /**
@@ -307,5 +321,14 @@ public class Launcher {
             Arrays.asList(torrentDumper).forEach(Component::stop);
             dhts.forEach(DHT::stop);
         }
+    }
+
+    /**
+     * torrent listener
+     *
+     * @return
+     */
+    public TorrentListener getTorrentListener() {
+        return torrentListener;
     }
 }
